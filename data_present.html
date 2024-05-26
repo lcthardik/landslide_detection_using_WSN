@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ThingSpeak Data Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #ff9f0a;
+            text-align: center;
+        }
+         h2 {
+            color: #00d172;
+        }
+
+        canvas {
+            background-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Project: ECE659 </h1>
+    <h2>Node #001: Mositure and Land Movement Data</h2>
+    <div>
+        <canvas id="moistureChart" width="400" height="200"></canvas>
+    </div>
+    <div>
+        <canvas id="movementChart" width="400" height="200"></canvas>
+    </div>
+
+    <script>
+        // Function to fetch data from ThingSpeak API
+      //GET https://api.thingspeak.com/channels/2224959/feeds.json?api_key=ZU8Y2NXKJ61CSEGR&results=2
+        async function fetchData() {
+            const apiURL = 'https://api.thingspeak.com/channels/2224959/feeds.json?api_key=ZU8Y2NXKJ61CSEGR';
+            const response = await fetch(apiURL);
+            const data = await response.json();
+            return data;
+        }
+
+        // Function to extract moisture and movement data from the fetched data
+        function extractData(data) {
+            const moistureData = [];
+            const movementData = [];
+            const timestamps = [];
+            for (const entry of data.feeds) {
+                const date = new Date(entry.created_at);
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                timestamps.push(`${hours}:${minutes < 10 ? '0' : ''}${minutes}`);
+                moistureData.push(parseFloat(entry.field1));
+                movementData.push(parseFloat(entry.field2));
+            }
+            return { moistureData, movementData, timestamps };
+        }
+
+        // Function to update moisture level graph
+        function updateMoistureGraph(chart, moistureData, timestamps) {
+            chart.data.labels = timestamps;
+            chart.data.datasets[0].data = moistureData;
+            chart.update();
+        }
+
+        // Function to update land movement graph
+        function updateMovementGraph(chart, movementData, timestamps) {
+            chart.data.labels = timestamps;
+            chart.data.datasets[0].data = movementData;
+            chart.update();
+        }
+        function updateMovementGraph(chart, movementData, timestamps) {
+        chart.data.labels = timestamps;
+        chart.data.datasets[0].data = movementData;
+        chart.update();
+
+        // Check if the latest movement data value is greater than 1
+        const latestMovementValue = movementData[movementData.length - 1];
+        if (latestMovementValue > 1) {
+            // Display an alert
+            alert(`Alert: Land Movement detected`);
+        }
+    }
+
+    // Main function to fetch data and update graphs
+    async function updateGraphs() {
+        try {
+            const data = await fetchData();
+            const { moistureData, movementData, timestamps } = extractData(data);
+            updateMoistureGraph(moistureChart, moistureData, timestamps);
+            updateMovementGraph(movementChart, movementData, timestamps);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+        // Main function to fetch data and update graphs
+        async function updateGraphs() {
+            try {
+                const data = await fetchData();
+                const { moistureData, movementData, timestamps } = extractData(data);
+                updateMoistureGraph(moistureChart, moistureData, timestamps);
+                updateMovementGraph(movementChart, movementData, timestamps);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        
+        // Create initial moisture level graph
+        const ctxMoisture = document.getElementById('moistureChart').getContext('2d');
+        const moistureChart = new Chart(ctxMoisture, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Moisture Level',
+                    data: [],
+                    borderColor: '#007bff', // Change color to blue
+                    fill: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Moisture'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Create initial land movement graph
+        const ctxMovement = document.getElementById('movementChart').getContext('2d');
+        const movementChart = new Chart(ctxMovement, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Land Movement',
+                    data: [],
+                    borderColor: 'red', // Change color to green
+                    fill: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Movement'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update graphs every 10 seconds (adjust interval as needed)
+        setInterval(updateGraphs, 1000);
+    </script>
+</body>
+
+</html>
