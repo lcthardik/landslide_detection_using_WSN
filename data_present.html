@@ -39,7 +39,7 @@
         // Function to fetch data from ThingSpeak API
       //GET https://api.thingspeak.com/channels/2224959/feeds.json?api_key=ZU8Y2NXKJ61CSEGR&results=2
         async function fetchData() {
-            const apiURL = 'https://api.thingspeak.com/channels/2224959/feeds.json?api_key=ZU8Y2NXKJ61CSEGR';
+            const apiURL = '';
             const response = await fetch(apiURL);
             const data = await response.json();
             return data;
